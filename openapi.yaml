@@ -1,0 +1,267 @@
+openapi: 3.0.3
+info:
+  title: Graduation Project System API (NCB - NHT)
+  description: |
+    Tài liệu đặc tả RESTful API cho hệ thống Đồ án tốt nghiệp (Web React & Mobile App).
+    - **App.Identity.Server**: Máy chủ xác thực tập trung (cấp phát JWT & Refresh Token).
+    - **App.Web.API**: Máy chủ cung cấp các API nghiệp vụ.
+  version: 1.0.0
+
+servers:
+  - url: https://localhost:7149
+    description: App.Web.API (HTTPS - Development)
+  - url: http://localhost:5215
+    description: App.Web.API (HTTP - Development)
+  - url: https://localhost:7085
+    description: App.Identity.Server (HTTPS - Development)
+  - url: http://localhost:5193
+    description: App.Identity.Server (HTTP - Development)
+
+tags:
+  - name: Auth
+    description: Xác thực & Phân quyền (App.Identity.Server)
+  - name: Common
+    description: API dùng chung & Danh mục động (Combobox/Dropdown)
+  - name: System
+    description: Quản trị hệ thống
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ==========================================
+  # 1. AUTHENTICATION (App.Identity.Server)
+  # ==========================================
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Đăng nhập hệ thống
+      description: Kiểm tra tài khoản/mật khẩu và trả về JWT Access Token kèm Refresh Token.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/XLangHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Làm mới Access Token
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/XLangHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Cấp mới token thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ==========================================
+  # 2. COMMON / LIST DATA (App.Web.API)
+  # ==========================================
+  /api/common/list-data:
+    post:
+      tags:
+        - Common
+      summary: Lấy dữ liệu danh mục động cho Combobox / Dropdown (GetListData)
+      description: Truyền vào `dataType` (ví dụ `Department`, `Category`...) để lấy danh sách lựa chọn.
+      parameters:
+        - $ref: '#/components/parameters/XLangHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListDataSearchRequest'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ListDataItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+# ==========================================
+# COMPONENTS (SCHEMAS, PARAMETERS, SECURITY)
+# ==========================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Nhập JWT Token theo định dạng `Bearer {token}`
+
+  parameters:
+    XLangHeader:
+      in: header
+      name: x-lang
+      required: false
+      schema:
+        type: string
+        enum: [vi-VN, en-US]
+        default: vi-VN
+      description: Ngôn ngữ phản hồi thông báo (Localization)
+
+  responses:
+    BadRequest:
+      description: Dữ liệu đầu vào không hợp lệ hoặc vi phạm ràng buộc nghiệp vụ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    Unauthorized:
+      description: Chưa đăng nhập hoặc Token không hợp lệ / hết hạn
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    NotFound:
+      description: Không tìm thấy dữ liệu
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Thao tác thành công
+        data:
+          type: object
+          nullable: true
+
+    PaginationMeta:
+      type: object
+      properties:
+        pageIndex:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalRecords:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 5
+
+    LoginRequest:
+      type: object
+      required:
+        - userName
+        - password
+      properties:
+        userName:
+          type: string
+          example: admin
+        password:
+          type: string
+          format: password
+          example: Admin@123
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                accessToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                refreshToken:
+                  type: string
+                  example: dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4=...
+                expiresIn:
+                  type: integer
+                  example: 3600
+
+    ListDataSearchRequest:
+      type: object
+      required:
+        - dataType
+      properties:
+        dataType:
+          type: string
+          example: Department
+          description: Tên loại danh mục cần lấy dữ liệu
+        keyword:
+          type: string
+          nullable: true
+          example: ""
+        parentId:
+          type: string
+          nullable: true
+
+    ListDataItem:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "1"
+        label:
+          type: string
+          example: Phòng Kỹ thuật
+        code:
+          type: string
+          nullable: true
+          example: DEPT_TECH

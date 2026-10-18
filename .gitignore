@@ -1,0 +1,36 @@
+# Node / Frontend / Mobile-App
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+dist-ssr/
+build/
+.expo/
+.next/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+**/*.env
+**/*.env.*
+!**/*.env.example
+
+# .NET / Visual Studio (Backend)
+**/[Bb]in/
+**/[Oo]bj/
+**/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+launchSettings.json
+
+# IDEs & OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
