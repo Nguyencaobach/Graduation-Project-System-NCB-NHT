@@ -1,5 +1,5 @@
 # TÀI LIỆU KIẾN TRÚC HỆ THỐNG BACKEND & LUỒNG DỮ LIỆU
-- **Backend:** .NET 8.0 (Multi-Tier Layered Architecture + Dapper)
+- **Backend:** NET 8.0 (Multi-Tier Layered Architecture + Dapper)
 - **Frontend:** React 19 + Vite + Tailwind CSS v4 (TanStack Query + Axios)
 
 Tài liệu này mô tả chi tiết cấu trúc thư mục, chức năng của từng Project (Tầng), giải thích lý do thiết lập các liên kết phụ thuộc (Project References - "nối dây"), và minh họa **luồng đi thực tế của một API từ lúc người dùng bấm nút trên giao diện cho đến khi trả kết quả về**.
@@ -116,11 +116,25 @@ Trong .NET, một Project mặc định là một hộp kín. Muốn Project A g
 
 | Project Đi Nối (Tầng gọi) | Nối Vào Project Nào (Tầng được gọi) | Tại sao BẮT BUỘC phải nối dây như vậy? |
 | :--- | :--- | :--- |
-| **`App.Web.Core`** | $ightarrow$ `App.Web.Core.Resources` | **Lý do:** Khi `CoreBaseRepository` trong `App.Web.Core` kiểm tra trùng mã (`CheckDataExists`) hoặc kiểm tra khóa ngoại (`CheckDataIsUsed`) mà phát hiện lỗi, nó cần lấy câu thông báo lỗi đa ngôn ngữ từ `App.Web.Core.Resources` để trả về cho người dùng. |
-| **`App.Web.Generator`** | $ightarrow$ `App.Web.Core`<br>$ightarrow$ `App.Web.Core.Resources` | **Lý do:** Công cụ sinh code cần đọc cấu hình chuỗi kết nối Database từ `App.Web.Core` để truy vấn các bảng `core_*`, sau đó kết nối tới cấu trúc của `Resources` để xuất ra các file `.g.cs` đúng định dạng. |
-| **`App.Business.Core`** | $ightarrow$ `App.Web.Core`<br>$ightarrow$ `App.Web.Core.Resources`<br>$ightarrow$ `App.Web.Model` | **Lý do:**<br>1. Nối vào `App.Web.Core` để `BaseRepository` và `BaseService` kế thừa lại toàn bộ hàm CRUD Dapper, Audit Log, Check FK của lớp `CoreBaseRepository`.<br>2. Nối vào `Resources` để các hàm Validation/Service trả về câu thông báo lỗi đa ngôn ngữ (thông qua `AppResource.g.cs`).<br>3. Nối vào `App.Web.Model` để dùng các class `Model` làm dữ liệu đầu vào/đầu ra. |
-| **`App.Identity.Server`** | $ightarrow$ `App.Business.Core`<br>$ightarrow$ `App.Web.Model`<br>$ightarrow$ `App.Web.Core`<br>$ightarrow$ `App.Web.Core.Resources` | **Lý do:** Máy chủ đăng nhập cần nhận `LoginModel` (từ `Web.Model`), gọi hàm kiểm tra tài khoản/mật khẩu trong DB (nằm ở `Business.Core` và `Web.Core`), và trả về câu báo lỗi "Sai mật khẩu" theo đúng ngôn ngữ (từ `Resources`). |
-| **`App.Web.API`** | $ightarrow$ `App.Business.Core`<br>$ightarrow$ `App.Web.Model`<br>$ightarrow$ `App.Web.Core`<br>$ightarrow$ `App.Web.Core.Resources` | **Lý do:**<br>1. Nối vào `Business.Core` để tự động đăng ký Dependency Injection (`CustomRegisterDi`) và để các Controller gọi được các Service nghiệp vụ.<br>2. Nối vào `Web.Model` để Controller nhận/trả dữ liệu JSON theo đúng Model.<br>3. Nối vào `Web.Core` và `Resources` để truyền chuỗi kết nối DB từ `appsettings.json` xuống Dapper và xử lý Middleware đa ngôn ngữ (`x-lang`). |
+| **`App.Web.Core`** | $
+ightarrow$ `App.Web.Core.Resources` | **Lý do:** Khi `CoreBaseRepository` trong `App.Web.Core` kiểm tra trùng mã (`CheckDataExists`) hoặc kiểm tra khóa ngoại (`CheckDataIsUsed`) mà phát hiện lỗi, nó cần lấy câu thông báo lỗi đa ngôn ngữ từ `App.Web.Core.Resources` để trả về cho người dùng. |
+| **`App.Web.Generator`** | $
+ightarrow$ `App.Web.Core`<br>$
+ightarrow$ `App.Web.Core.Resources` | **Lý do:** Công cụ sinh code cần đọc cấu hình chuỗi kết nối Database từ `App.Web.Core` để truy vấn các bảng `core_*`, sau đó kết nối tới cấu trúc của `Resources` để xuất ra các file `.g.cs` đúng định dạng. |
+| **`App.Business.Core`** | $
+ightarrow$ `App.Web.Core`<br>$
+ightarrow$ `App.Web.Core.Resources`<br>$
+ightarrow$ `App.Web.Model` | **Lý do:**<br>1. Nối vào `App.Web.Core` để `BaseRepository` và `BaseService` kế thừa lại toàn bộ hàm CRUD Dapper, Audit Log, Check FK của lớp `CoreBaseRepository`.<br>2. Nối vào `Resources` để các hàm Validation/Service trả về câu thông báo lỗi đa ngôn ngữ (thông qua `AppResource.g.cs`).<br>3. Nối vào `App.Web.Model` để dùng các class `Model` làm dữ liệu đầu vào/đầu ra. |
+| **`App.Identity.Server`** | $
+ightarrow$ `App.Business.Core`<br>$
+ightarrow$ `App.Web.Model`<br>$
+ightarrow$ `App.Web.Core`<br>$
+ightarrow$ `App.Web.Core.Resources` | **Lý do:** Máy chủ đăng nhập cần nhận `LoginModel` (từ `Web.Model`), gọi hàm kiểm tra tài khoản/mật khẩu trong DB (nằm ở `Business.Core` và `Web.Core`), và trả về câu báo lỗi "Sai mật khẩu" theo đúng ngôn ngữ (từ `Resources`). |
+| **`App.Web.API`** | $
+ightarrow$ `App.Business.Core`<br>$
+ightarrow$ `App.Web.Model`<br>$
+ightarrow$ `App.Web.Core`<br>$
+ightarrow$ `App.Web.Core.Resources` | **Lý do:**<br>1. Nối vào `Business.Core` để tự động đăng ký Dependency Injection (`CustomRegisterDi`) và để các Controller gọi được các Service nghiệp vụ.<br>2. Nối vào `Web.Model` để Controller nhận/trả dữ liệu JSON theo đúng Model.<br>3. Nối vào `Web.Core` và `Resources` để truyền chuỗi kết nối DB từ `appsettings.json` xuống Dapper và xử lý Middleware đa ngôn ngữ (`x-lang`). |
 
 ---
 
@@ -200,7 +214,8 @@ Solution 'App.Backend'
 
 #### Bước 1: Xuất phát từ `Frontend` (React + Vite)
 1. Người dùng điền thông tin đặt phòng trên màn hình `src/pages/RoomManagement/BookingManagement/CreateBooking.jsx` và bấm nút **Lưu**.
-2. Giao diện gọi Custom Hook trong `src/hooks/useBookings.js` $ightarrow$ gọi tiếp `src/api/bookingApi.js`.
+2. Giao diện gọi Custom Hook trong `src/hooks/useBookings.js` $
+ightarrow$ gọi tiếp `src/api/bookingApi.js`.
 3. `src/api/axiosClient.js` tự động chạy **Request Interceptor**:
    * Lấy `accessToken` trong `localStorage` gắn vào Header `Authorization: Bearer <token>`.
    * Lấy ngôn ngữ hiện tại gắn vào Header `x-lang: vi-VN`.
@@ -208,7 +223,8 @@ Solution 'App.Backend'
 
 #### Bước 2: Đi qua Trạm Gác tại `04.App.Web` / `App.Web.API`
 1. Gói tin chạm vào `Program.cs` của **`App.Web.API`**.
-2. **Trạm kiểm soát 1 (Authentication Middleware):** Kiểm tra xem thẻ JWT có hợp lệ và còn hạn không. Nếu giả mạo hoặc hết hạn $ightarrow$ chặn ngay lập tức và trả về lỗi `401 Unauthorized` (React tự đá về trang `/login`).
+2. **Trạm kiểm soát 1 (Authentication Middleware):** Kiểm tra xem thẻ JWT có hợp lệ và còn hạn không. Nếu giả mạo hoặc hết hạn $
+ightarrow$ chặn ngay lập tức và trả về lỗi `401 Unauthorized` (React tự đá về trang `/login`).
 3. **Trạm kiểm soát 2 (Localization Middleware):** Đọc Header `x-lang: vi-VN` và báo xuống cho project **`01.App.Core / App.Web.Core.Resources`** biết rằng: *"Request này đang dùng tiếng Việt nhé!"*.
 
 #### Bước 3: Tiếp nhận tại `Controller` (`04.App.Web` / `App.Web.API` / `Controllers`)
@@ -222,19 +238,23 @@ Solution 'App.Backend'
 3. Trong `BookingValidation.cs`:
    * Kiểm tra các quy tắc cơ bản (Khách hàng đã chọn chưa? Ngày Check-out có lớn hơn ngày Check-in không?).
    * Gọi hàm `CheckDataExists` (kế thừa từ **`01.App.Core / App.Web.Core / Base / CoreBaseRepository.cs`**) để kiểm tra trong Database xem mã đặt phòng có bị trùng hay phòng đó đã có người khác đặt trong khung giờ đó chưa.
-   * **Nếu phát hiện lỗi:** Nó lấy mã lỗi từ **`01.App.Core / App.Web.Core.Resources / Resources / AppResource.g.cs`** (ví dụ: *"Phòng đã có người đặt trong thời gian này"*), đóng gói thành kết quả lỗi và **trả ngược thẳng về `BookingController` $ightarrow$ về React** để hiện thông báo đỏ lên màn hình mà không chạy tiếp Bước 5.
+   * **Nếu phát hiện lỗi:** Nó lấy mã lỗi từ **`01.App.Core / App.Web.Core.Resources / Resources / AppResource.g.cs`** (ví dụ: *"Phòng đã có người đặt trong thời gian này"*), đóng gói thành kết quả lỗi và **trả ngược thẳng về `BookingController` $
+ightarrow$ về React** để hiện thông báo đỏ lên màn hình mà không chạy tiếp Bước 5.
 
 #### Bước 5: Truy vấn SQL tại `Repository` (`03.App.Shared` / `App.Business.Core` / `Modules/Booking`)
 1. Khi `BookingValidation.cs` báo mọi thứ đều hợp lệ, `BookingService.cs` gọi sang file thứ 3 trong cùng thư mục là **`Modules/Booking/BookingRepository.cs`**.
 2. `BookingRepository.cs` chuẩn bị câu lệnh SQL `INSERT INTO bookings ...` (hoặc gọi hàm `Create` có sẵn).
 
 #### Bước 6: Thực thi Dapper & Ghi Log tại Tầng Lõi (`01.App.Core` / `App.Web.Core` / `Base`)
-1. Vì `BookingRepository` kế thừa từ `BaseRepository` $ightarrow$ kế thừa tiếp từ **`CoreBaseRepository.cs`** (ở Tầng 1 `App.Web.Core`), câu lệnh SQL được chuyển xuống `CoreBaseRepository.cs`.
+1. Vì `BookingRepository` kế thừa từ `BaseRepository` $
+ightarrow$ kế thừa tiếp từ **`CoreBaseRepository.cs`** (ở Tầng 1 `App.Web.Core`), câu lệnh SQL được chuyển xuống `CoreBaseRepository.cs`.
 2. `CoreBaseRepository.cs` lấy chuỗi kết nối `DefaultConnection` (được đọc từ file **`appsettings.json`** của `App.Web.API`), mở kết nối **Dapper** xuống Database và thực thi lệnh `INSERT`.
 3. Ngay sau khi `INSERT` thành công, hàm `SaveLogHistory` trong `CoreBaseRepository.cs` tự động chạy ngầm để ghi lại vào bảng `core_log_history`: *"User A vừa thêm mới Booking ID 105, dữ liệu JSON là {...} vào lúc 23:45"*.
 
 #### Bước 7: Trả Kết Quả Ngược Về Cho Giao Diện React
-1. Database báo lưu thành công $ightarrow$ `CoreBaseRepository` trả kết quả lên `BookingRepository` $ightarrow$ lên `BookingService`.
+1. Database báo lưu thành công $
+ightarrow$ `CoreBaseRepository` trả kết quả lên `BookingRepository` $
+ightarrow$ lên `BookingService`.
 2. `BookingService` đính kèm câu thông báo thành công từ `AppResource.g.cs` (ví dụ: *"Thêm mới đặt phòng thành công"*) rồi trả lên cho **`BookingController`** (Tầng 4).
 3. `BookingController` trả về HTTP Status `200 OK` kèm cục dữ liệu JSON (đã tự động format tên biến thành `camelCase`) về cho `axiosClient.js` bên React.
 4. Bên React, `TanStack Query` (`useBookings.js`) nhận được tín hiệu thành công, tự động làm mới lại danh sách đặt phòng trên màn hình mà không cần tải lại trang (F5)!
