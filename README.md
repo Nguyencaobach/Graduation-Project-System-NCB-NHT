@@ -1,12 +1,12 @@
-# 🎓 [TÊN HỆ THỐNG TIẾNG ANH - VIẾT TẮT (NẾU CÓ)]
-### Đề tài: [TÊN ĐỀ TÀI ĐỒ ÁN TỐT NGHIỆP TIẾNG VIỆT]
+# 🎓 [SMART FACTORY]
+### Đề tài: [HỆ THỐNG NHÀ MÁY THÔNG MINH]
 ---
 
 ## 📖 1. Giới thiệu Dự án (Overview)
 
-Repository **`Graduation-Project-System-NCB-NHT`** là mã nguồn chính thức của Đồ án tốt nghiệp: **"[ĐIỀN TÊN ĐỀ TÀI ĐỒ ÁN CỦA BẠN VÀO ĐÂY]"**.
+Repository **`Graduation-Project-System-NCB-NHT`** là mã nguồn chính thức của Đồ án tốt nghiệp: **"SMART FACTORY"**.
 
-Hệ thống **`[TÊN HỆ THỐNG]`** được xây dựng nhằm giải quyết bài toán **`[Mô tả ngắn gọn 1-2 câu về mục tiêu của hệ thống: ví dụ quản lý vận hành, tối ưu quy trình nghiệp vụ, quản lý dữ liệu tập trung...]`**, hướng tới tính ổn định, bảo mật, hỗ trợ đa ngôn ngữ và khả năng mở rộng theo tiêu chuẩn kiến trúc phần mềm doanh nghiệp (Enterprise Architecture).
+Hệ thống **`[SMART FACTORY]`** được xây dựng nhằm giải quyết bài toán **`[Quản lý vận hành, tối ưu quy trình nghiệp vụ, quản lý dữ liệu tập trung]`**, hướng tới tính ổn định, bảo mật, hỗ trợ đa ngôn ngữ và khả năng mở rộng theo tiêu chuẩn kiến trúc phần mềm doanh nghiệp (Enterprise Architecture).
 
 ## 🏗️ 2. Kiến trúc Hệ thống & Công nghệ Sử dụng (Tech Stack)
 
