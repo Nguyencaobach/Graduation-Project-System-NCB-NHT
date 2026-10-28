@@ -1,31 +1,41 @@
-# 🎓 [SMART FACTORY]
-### Đề tài: [HỆ THỐNG NHÀ MÁY THÔNG MINH]
+# 🎓 HYBRID PROJECT MANAGEMENT PLATFORM
+### Đề tài: Hệ thống Quản lý Dự án Tập trung tích hợp DevOps, Chat Real-time & AI Đánh giá
+
 ---
 
 ## 📖 1. Giới thiệu Dự án (Overview)
 
-Repository **`Graduation-Project-System-NCB-NHT`** là mã nguồn chính thức của Đồ án tốt nghiệp: **"SMART FACTORY"**.
+Repository **`Graduation-Project-System-NCB-NHT`** là mã nguồn chính thức của Đồ án tốt nghiệp: **"Hệ thống Quản lý Dự án Tập trung tích hợp DevOps, Chat Real-time & AI Đánh giá (Hybrid Project Management Platform)"**.
 
-Hệ thống **`[SMART FACTORY]`** được xây dựng nhằm giải quyết bài toán **`[Quản lý vận hành, tối ưu quy trình nghiệp vụ, quản lý dữ liệu tập trung]`**, hướng tới tính ổn định, bảo mật, hỗ trợ đa ngôn ngữ và khả năng mở rộng theo tiêu chuẩn kiến trúc phần mềm doanh nghiệp (Enterprise Architecture).
+Hệ thống được xây dựng nhằm giải quyết bài toán quản lý dự án phần mềm theo mô hình lai (**Hybrid: Waterfall Phase + Agile Sprint/Kanban**), kết hợp phân bổ nguồn lực nhân sự (**HRM Skill Matrix**), tự động hóa đồng bộ trạng thái công việc từ **GitHub/GitLab CI/CD Webhook**, trao đổi nội bộ **Chat Real-time**, và ứng dụng **AI (LLM)** dự báo rủi ro trễ tiến độ cũng như đánh giá hiệu suất thành viên.
+
+---
 
 ## 🏗️ 2. Kiến trúc Hệ thống & Công nghệ Sử dụng (Tech Stack)
 
-Dự án được thiết kế theo mô hình **Multi-Tier Layered Architecture (Kiến trúc Phân tầng Đa lớp)** kết hợp với **Headless RESTful API**, tách biệt hoàn toàn giữa Backend Server và Frontend Client (phục vụ đồng thời cho cả Web Application và Mobile Application).
+Dự án được thiết kế theo mô hình **Modular Clean Architecture (Kiến trúc Sạch kết hợp Phân hệ Chức năng)** cùng **Headless API + Real-time SignalR**, phục vụ đồng thời cho cả Web Application và Mobile Application.
 
-### 🖥️ Backend (`Backend/`)
+### 🖥️ Backend ([`Backend/Project-Management-System/`](./Backend/Project-Management-System))
 * **Framework:** .NET 8.0 (ASP.NET Core Web API - LTS)
-* **Data Access:** Micro-ORM **Dapper** (Tối ưu hiệu năng truy vấn SQL thuần)
-* **Cơ sở dữ liệu:** `[Điền tên Hệ quản trị CSDL: SQL Server / PostgreSQL / MySQL]`
-* **Bảo mật & Xác thực:** Máy chủ xác thực tập trung (`App.Identity.Server`), JWT (JSON Web Token)
-* **Đặc trưng kiến trúc:**
-  * **Automated Code Generation (`App.Web.Generator`):** Tự động sinh mã nguồn hằng số (`.g.cs`) và từ điển đa ngôn ngữ từ Database, loại bỏ hoàn toàn *Magic Strings*.
-  * **Core Base Infrastruktur (`App.Web.Core`):** Tự động hóa kiểm tra trùng lặp dữ liệu (`CheckDataExists`), kiểm tra ràng buộc khóa ngoại trước khi xóa (`CheckDataIsUsed`), và ghi nhật ký truy vết hệ thống (`SaveLogHistory` - Audit Log).
-  * **Đa ngôn ngữ (Localization):** Hỗ trợ chuyển đổi ngôn ngữ động theo từng Request thông qua Header `x-lang`.
+* **Kiến trúc 4 Tầng:** `App.Domain` → `App.Application` → `App.Infrastructure` → `App.WebApi`
+* **Hybrid Data Access:**
+  * **Entity Framework Core:** Quản lý Migrations, đảm bảo toàn vẹn khóa ngoại cho thao tác Thêm/Sửa/Xóa (`INSERT/UPDATE/DELETE`) và tự động ghi nhật ký truy vết qua `AuditLogInterceptor`.
+  * **Micro-ORM Dapper:** Tối ưu tốc độ truy vấn SQL đọc dữ liệu lớn (`SELECT` phân trang, Kanban Board, biểu đồ Gantt/Burndown, tổng hợp số liệu cho AI).
+* **Real-time & Tích hợp:** SignalR (`WorkspaceHub`), GitHub/GitLab Webhook (`X-Hub-Signature-256`), Gemini / OpenAI API, JWT Authentication.
+* **Đa ngôn ngữ (`Localization`):** Chuyển đổi ngôn ngữ động theo từng Request qua Header `x-lang` (`vi-VN`, `en-US`), nạp từ điển từ bảng `LanguageResources` dưới Database vào `IMemoryCache` tốc độ cao.
 
-### 🎨 Frontend (`Frontend/`)
+### 🎨 Frontend Web ([`Website/`](./Website))
 * **Core:** React 19 + Vite
 * **Styling:** Tailwind CSS v4 (`@tailwindcss/vite`)
-* **Data Fetching & State Management:** TanStack React Query v5 + Axios (Interceptors tự động đính kèm JWT & `x-lang`)
+* **Data Fetching & Real-time:** TanStack React Query v5 + Axios (Interceptors tự động đính kèm JWT & `x-lang`) + `@microsoft/signalr`
 * **Routing & Visualization:** React Router DOM v7, Recharts
 
+### 📱 Mobile App ([`Mobile-App/`](./Mobile-App))
+* **Framework:** Flutter (Feature-First Architecture)
+
 ---
+
+## 📚 3. Tài liệu Kỹ thuật Chi tiết (`Document/`)
+
+* 📘 [Tài liệu Kiến trúc Hệ thống Backend & Luồng Dữ liệu](./Document/System-Architecture.md)
+* ⚙️ [Hướng dẫn Cấu hình & Khởi chạy Hệ thống (Backend, Website & Mobile)](./Document/Installation-and-Configuration.md)

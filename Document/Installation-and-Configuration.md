@@ -1,59 +1,116 @@
-# HƯỚNG DẪN CẤU HÌNH CHẠY BACKEND (.NET 8.0) & CÀI ĐẶT FRONTEND (REACT + TAILWIND V4)
+# HƯỚNG DẪN CẤU HÌNH & KHỞI CHẠY HỆ THỐNG (BACKEND .NET 8.0, WEBSITE REACT & MOBILE FLUTTER)
 
-Tài liệu này lưu trữ các bước thiết lập để khởi chạy đồng thời các tiến trình máy chủ ở phía Backend và toàn bộ câu lệnh khởi tạo, cài đặt thư viện cho phía Frontend.
-
----
-
-## PHẦN 1: CẤU HÌNH CHẠY ĐỒNG THỜI CÁC TIẾN TRÌNH BACKEND (`Multiple Startup Projects`)
-
-Trong kiến trúc hệ thống ở tầng `04.App.Web`, chúng ta có 2 máy chủ chạy độc lập trên 2 Port khác nhau là **`App.Identity.Server`** (Xác thực cấp JWT) và **`App.Web.API`** (Xử lý nghiệp vụ). 
-
-Để mỗi lần bấm nút **Start (F5)** trên Visual Studio, cả 2 máy chủ này đều tự động bật lên cùng lúc, bạn thực hiện theo các bước sau:
-
-### Các bước thực hiện trên Visual Studio:
-1. Mở bảng **Solution Explorer** (nằm ở bên phải màn hình).
-2. **Click chuột phải** vào dòng trên cùng của Solution: **`Solution 'App.Backend' (6 of 6 projects)`**.
-3. Chọn mục **`Configure Startup Projects...`** (hoặc chọn **`Properties`**).
-4. Một cửa sổ mới hiện lên, tại mục **Common Properties** $\rightarrow$ **Startup Project**, bạn tích chọn vào dòng **`Multiple startup projects:`**.
-5. Nhìn vào bảng danh sách các Project ở bên dưới, tại cột **Action**, bạn thiết lập như sau:
-   * **`App.Web.Core`**: Giữ nguyên là `None`
-   * **`App.Web.Core.Resources`**: Giữ nguyên là `None`
-   * **`App.Web.Generator`**: Giữ nguyên là `None` *(Chỉ bấm chạy riêng khi cần sinh code `.g.cs`)*
-   * **`App.Business.Core`**: Giữ nguyên là `None`
-   * **`App.Web.Model`**: Giữ nguyên là `None`
-   * **`App.Identity.Server`**: Đổi từ `None` sang **`Start`**
-   * **`App.Web.API`**: Đổi từ `None` sang **`Start`**
-6. Bấm nút **`Apply`** $\rightarrow$ Bấm **`OK`**.
-
-> **Kết quả:** Từ bây giờ, trên thanh công cụ chính của Visual Studio sẽ hiển thị chữ `<Multiple Startup Projects>`. Khi bạn nhấn phím **F5** (hoặc nút Play màu xanh), cả 2 máy chủ `Identity.Server` và `Web.API` sẽ cùng khởi chạy song song.
+Tài liệu này lưu trữ toàn bộ các bước thiết lập môi trường, cấu hình khởi chạy máy chủ Backend trên Visual Studio / Terminal, cũng như câu lệnh cài đặt thư viện cho giao diện Web (`Website/`) và ứng dụng di động (`Mobile-App/`).
 
 ---
 
-## PHẦN 2: CÁC LỆNH CÀI ĐẶT MÔI TRƯỜNG FRONTEND (REACT + VITE + TAILWIND CSS V4)
+## PHẦN 1: CẤU HÌNH & KHỞI CHẠY BACKEND (`.NET 8.0` - `App.WebApi`)
 
-Dưới đây là toàn bộ các bước và câu lệnh Terminal để tạo dự án giao diện Web theo đúng bộ công nghệ của `InnkeeperHub-Website` (React 19 + Vite + Tailwind CSS v4 + Axios + TanStack React Query).
+Trong kiến trúc **Modular Clean Architecture** mới (`Backend/Project-Management-System/Project-Management-System.slnx`), toàn bộ chức năng xác thực JWT (`01_Identity`), REST API nghiệp vụ, GitHub Webhook và WebSocket (`SignalR`) đều được hợp nhất vào **1 cổng máy chủ duy nhất là `App.WebApi`**.
 
-### Bước 1: Tạo khung dự án React bằng Vite
-Mở **Terminal** (`` Ctrl + ` ``) tại thư mục gốc của Đồ án (nằm ngang hàng với thư mục `Backend`) và chạy lần lượt các lệnh:
+> **Lưu ý quan trọng:** Bạn **KHÔNG CẦN** cấu hình `Multiple Startup Projects` chạy 2 Port song song như hệ thống cũ nữa. Khi `App.WebApi` khởi chạy, nó sẽ tự động nạp cả 3 thư viện tầng dưới (`App.Domain`, `App.Application`, `App.Infrastructure`) thông qua liên kết `ProjectReference`.
+
+### 1.1. Cách Build & Chạy trên Visual Studio ("Visual tím")
+1. Mở file Solution tại đường dẫn:
+   `Backend/Project-Management-System/Project-Management-System.slnx`
+2. **Đặt Project khởi chạy (chỉ cần làm 1 lần đầu):**
+   * Ở bảng **Solution Explorer** (bên phải), mở thư mục `src`.
+   * Click chuột phải vào **`App.WebApi`** → chọn **`Set as Startup Project`** (tên `App.WebApi` sẽ **in đậm** lên).
+3. **Chọn chế độ chạy trực tiếp (`https` thay vì Docker):**
+   * Nhìn lên thanh công cụ trên cùng cạnh nút Play màu xanh lá (`▶`).
+   * Nếu đang hiển thị chữ **`Container (Dockerfile)`** mà máy bạn chưa bật Docker Desktop, hãy bấm vào **mũi tên nhỏ `▼`** kế bên → đổi sang chọn **`https`** (hoặc **`http`**).
+4. **Build & Khởi chạy:**
+   * Nhấn **`Ctrl + Shift + B`** để Build kiểm tra lỗi biên dịch toàn bộ 4 tầng (`Build: 4 succeeded, 0 failed`).
+   * Nhấn phím **`F5`** (chạy kèm Debug) hoặc **`Ctrl + F5`** (chạy nhanh không Debug).
+   * Trình duyệt sẽ tự động mở trang tài liệu API **Swagger UI** tại địa chỉ: `https://localhost:7299/swagger` (hoặc `http://localhost:5091/swagger`).
+
+### 1.2. Cách Build & Chạy nhanh bằng Terminal (VS Code / PowerShell)
+Khi đang code giao diện bên `Website/` hoặc `Mobile-App/` và muốn bật nhanh Backend mà không cần mở Visual Studio:
+
+```powershell
+# 1. Di chuyển vào thư mục chứa Solution Backend
+cd Backend/Project-Management-System
+
+# 2. Build kiểm tra toàn bộ dự án
+dotnet build
+
+# 3. Khởi chạy Server App.WebApi với cấu hình https
+dotnet run --project App.WebApi --launch-profile https
+```
+
+### 1.3. Các câu lệnh quản lý Database Migration (EF Core)
+Khi thêm hoặc chỉnh sửa các bảng `Entities` trong `App.Domain` và cấu hình trong `App.Infrastructure/Persistence/AppDbContext.cs`, mở Terminal tại thư mục `Backend/Project-Management-System` để chạy Migration:
+
+```powershell
+# 1. Cài đặt công cụ dotnet-ef (chỉ cần chạy 1 lần trên máy mới)
+dotnet tool install --global dotnet-ef
+
+# 2. Tạo bản ghi thay đổi cấu trúc bảng mới (thay <TenMigration> bằng tên mô tả, VD: InitDatabase)
+dotnet ef migrations add <TenMigration> --project App.Infrastructure --startup-project App.WebApi
+
+# 3. Áp dụng thay đổi để tự động tạo/cập nhật bảng xuống Database thật
+dotnet ef database update --project App.Infrastructure --startup-project App.WebApi
+```
+
+---
+
+## PHẦN 2: CÀI ĐẶT & KHỞI CHẠY FRONTEND WEB (`Website/` - REACT 19 + VITE + TAILWIND V4)
+
+Mã nguồn giao diện Web được đặt tại thư mục **`Website/`** ở gốc dự án, sử dụng bộ công nghệ: **React 19 + Vite + Tailwind CSS v4 + TanStack React Query v5 + Axios + SignalR Client**.
+
+### 2.1. Chạy dự án đối với thành viên kéo code từ Git về
+Mở Terminal tại thư mục gốc của Repository:
 
 ```bash
-# 1. Khởi tạo project React (chọn template JavaScript chuẩn của Vite)
-npm create vite@latest Frontend -- --template react
+# 1. Di chuyển vào thư mục Website
+cd Website
 
-# 2. Di chuyển vào thư mục Frontend vừa tạo
-cd Frontend
-
-# 3. Cài đặt các gói mặc định của React & Vite
+# 2. Cài đặt toàn bộ thư viện khai báo trong package.json
 npm install
+
+# 3. Cài đặt thư viện SignalR Client (phục vụ Chat Real-time & đồng bộ bảng Kanban)
+npm install @microsoft/signalr
+
+# 4. Chạy máy chủ phát triển giao diện (Vite Dev Server)
+npm run dev
 ```
 
-### Bước 2: Cài đặt Tailwind CSS v4 và các thư viện cốt lõi
-Chạy 2 cụm lệnh sau trong Terminal (đảm bảo đang đứng ở thư mục `Frontend`):
+### 2.2. Quy chuẩn cấu hình `axiosClient` gửi JWT & Đa ngôn ngữ (`x-lang`)
+Khi gọi xuống `App.WebApi`, toàn bộ HTTP Request từ React đều đi qua Request Interceptor của Axios để tự động gắn thẻ định danh **Bearer Token** và mã ngôn ngữ hiện tại (**`x-lang`**) khớp với `LocalizationMiddleware` của Backend:
+
+```javascript
+// Ví dụ chuẩn trong Website/src/api/axiosClient.js
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  const currentLang = localStorage.getItem("appLanguage") || "vi-VN"; // "vi-VN" hoặc "en-US"
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  config.headers["x-lang"] = currentLang;
+
+  return config;
+});
+```
+
+*(Lưu ý phụ: Nếu cần khởi tạo mới hoàn toàn từ đầu trên một thư mục trắng, dùng lệnh `npm create vite@latest Website -- --template react` và cài đặt gói `npm install tailwindcss @tailwindcss/vite axios react-router-dom @tanstack/react-query @tanstack/react-query-devtools recharts @microsoft/signalr`).*
+
+---
+
+## PHẦN 3: CÀI ĐẶT & KHỞI CHẠY MOBILE APP (`Mobile-App/` - FLUTTER)
+
+Mã nguồn ứng dụng di động đặt tại thư mục **`Mobile-App/flutter_application_1/`**:
 
 ```bash
-# 1. Cài đặt Tailwind CSS v4 tích hợp trực tiếp với Vite
-npm install tailwindcss @tailwindcss/vite
+# 1. Di chuyển vào thư mục ứng dụng Flutter
+cd Mobile-App/flutter_application_1
 
-# 2. Cài đặt bộ thư viện điều hướng, gọi API, quản lý State, biểu đồ & quét mã QR/Barcode
-npm install axios react-router-dom @tanstack/react-query @tanstack/react-query-devtools recharts html5-qrcode jsbarcode @zxing/browser
+# 2. Tải toàn bộ thư viện khai báo trong pubspec.yaml
+flutter pub get
+
+# 3. Khởi chạy ứng dụng lên máy ảo Android / iOS hoặc thiết bị thật
+flutter run
 ```
+
+> **Mẹo kết nối API từ Máy ảo Android vào Backend chạy Localhost:**
+> Trên trình giả lập Android Emulator, địa chỉ `localhost` của máy tính tương ứng với IP **`10.0.2.2`** (ví dụ gọi qua HTTP Port `http://10.0.2.2:5091/api/...`), đồng thời nhớ đính kèm Header `Authorization` và `x-lang` tương tự như trên Web React.
